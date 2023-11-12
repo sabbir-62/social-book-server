@@ -6,4 +6,3 @@ app.listen(port,()=>{
     console.log(`Server is Running Successfully at http://localhost:${port}`);
     mongoConnect();
 });
-
