@@ -7,35 +7,35 @@ const userSchema = new Schema(
         firstName:{
             type: String,
             trim: true,
-            retuired: true,
+            required: true,
             minlength:3,
             maxlength:15
         },
         lastName:{
             type: String,
             trim: true,
-            retuired: true,
+            required: true,
             minlength:3,
             maxlength:15
         },
         userName:{
             type: String,
             trim: true,
-            retuired: true,
+            required: true,
             unique: true
         },
         email:{
             type: String,
             trim: true,
-            retuired: true,
+            required: true,
             unique: true
         },
         password:{
             type: String,
             trim: true,
-            retuired: true
+            required: true
         },
-        activied:{
+        activated:{
             type: Boolean,
             default: false
         },
