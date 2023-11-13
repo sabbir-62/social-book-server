@@ -46,9 +46,9 @@ exports.registration_user = async(req)=>{
             firstName,lastName,email,userName:newUserName,password:passwordBcrypt
         }).save();
 
-        const emailVarification = generateToken({id:userData._id},"15m");
+        const emailVerification = generateToken({id:userData._id},"15m");
 
-        const url = `${process.env.BASE_URL}/activate/${emailVarification}`;
+        const url = `${process.env.BASE_URL}/activate/${emailVerification}`;
 
        await sendEmail(userData.email,userData.firstName,url);
 
@@ -75,11 +75,11 @@ exports.activate_user = async(req)=>{
             return {status:"Fail",message:"expire Your Token please try again."};
         }
 
-        const userData = await userModel.findByIdAndUpdate({_id:verificationData.id},{$set:{activied:true}});
+        const userData = await userModel.findByIdAndUpdate({_id:verificationData.id},{$set:{activated:true}});
 
-        const userActivedToken = generateToken({id:userData._id},"15d");
+        const userActivatedToken = generateToken({id:userData._id},"15d");
 
-        return {status:"success",token:userActivedToken};
+        return {status:"success",token:userActivatedToken};
 
     } catch (err) {
         return {status:"Fail",message:"something went wrong.",error:err.message};
@@ -111,16 +111,16 @@ exports.login_user = async(req)=>{
 
         const passwordCheck = bcrypt.compare(password,findUser.password);
         if(!passwordCheck){
-            return {status:"Fail",message:"invalid email/password.plase try again."};
+            return {status:"Fail",message:"invalid email/password.please try again."};
         };
 
-        if(findUser.activied == true){
+        if(findUser.activated == true){
             const userToken = generateToken({id:findUser._id},"15d");
             return {status:"success",token:userToken};
         }else{
-            const emailVarification = generateToken({id:findUser._id},"15m");
+            const emailVerification = generateToken({id:findUser._id},"15m");
 
-            const url = `${process.env.BASE_URL}/activate/${emailVarification}`;
+            const url = `${process.env.BASE_URL}/activate/${emailVerification}`;
     
            await sendEmail(findUser.email,findUser.firstName,url);
     
