@@ -16,10 +16,10 @@ const userSchema = new mongoose.Schema({
     },
     email : {
         type : String,
-        trim : [true, "Eamil is Required"],
+        trim : [true, "Email is Required"],
         required : true,
         unique : true,
-        lowercaes : true,
+        lowercase : true,
         validate : {
             validator : function (value) {
                 return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
@@ -37,7 +37,7 @@ const userSchema = new mongoose.Schema({
         type : String,
         trim : [true, "Password is Required"],
         required : true,
-        minLength : [6, "Minimum lenght of 6 Character"],
+        minLength : [6, "Minimum length of 6 Character"],
         set : (v) => {
            return bcrypt.hashSync(v, bcrypt.genSaltSync(10))
         },

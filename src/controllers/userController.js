@@ -1,14 +1,8 @@
 const createError = require("http-errors");
 const jwt = require('jsonwebtoken');
-const {
-    User
-} = require("../models/userModel");
-const {
-    jsonKey
-} = require("../../secret");
-const {
-    successResponse
-} = require("./responseController");
+const {User} = require("../models/userModel");
+const {jsonKey} = require("../../secret");
+const {successResponse} = require("./responseController");
 const SendEmailUtility = require("../helpers/nodeMailer");
 
 const processRegister = async (req, res, next) => {
@@ -22,15 +16,12 @@ const processRegister = async (req, res, next) => {
             gender
         } = req.body;
 
-        const userExist = await User.exists({
-            email: email
-        })
+        const userExist = await User.findOne({email:email})
         if (userExist) {
             throw createError(409, "User already exists with this email. please login")
         }
 
         //   create jwt 
-
         const token = jwt.sign({
             fName,
             lName,
@@ -72,7 +63,7 @@ const processRegister = async (req, res, next) => {
                 }
             })
         } catch (e) {
-            next(createError(500, "Failed to send varification email"))
+            next(createError(500, "Failed to send verification email"))
             return;
         }
 
@@ -80,6 +71,4 @@ const processRegister = async (req, res, next) => {
         next(error)
     }
 }
-module.exports = {
-    processRegister
-}
+module.exports = {processRegister}

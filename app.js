@@ -25,18 +25,17 @@ dotEnv.config();
 
 // express ratelimiter import and implementation
 const limit = require('express-rate-limit');
-const { errorResponse } = require('./src/controllers/responseController');
-const router = require('./src/routes/api');
 const limiter = limit({
     windowMs : 1 * 60 * 1000,
     max : 20,
-    message: 'too many requests sent by this ip, please try again in an minute !'
+    message: 'Too many requests sent by this ip, please try again in an minute !'
 });
 
 app.use(limiter);
 
 
 // router implement 
+const router = require('./src/routes/api');
 app.use( router)
 
 // api testing 
@@ -52,6 +51,7 @@ app.use((req, res, next) => {
 })
 
 // server error handling -> finally all the error here is
+const { errorResponse } = require('./src/controllers/responseController');
 app.use((err, req, res, next) => {
    
     return errorResponse(res, {
