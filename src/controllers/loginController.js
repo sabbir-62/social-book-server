@@ -1,5 +1,5 @@
 // Import
-const user = require('../models/userModel')
+const {User }= require('../models/userModel')
 const bcrypt = require('bcryptjs')
 
 
@@ -14,7 +14,7 @@ exports.userLogin = async(req, res) => {
             })
         }
 
-        const existingUser = await user.findOne({email}) // find user with email
+        const existingUser = await User.findOne({email}) // find user with email
 
         const matchPassword = await bcrypt.compare(password, existingUser.password); // password comparison process
 
@@ -34,7 +34,7 @@ exports.userLogin = async(req, res) => {
     }
     catch(error){
         return res.status(404).json({
-            success: true,
+            success: false,
             message: 'Something went wrong!'
         })
     }
