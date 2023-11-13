@@ -1,20 +1,20 @@
 const {PORT,app,mongoose,DATA} = require('./App');
 
-// data base connect....
-const dataConnenct = async()=>{
+// Database connection....
+const dataConnect = async()=>{
     try {
        await mongoose.connect(DATA);
-        console.log('Data Base connect Done.....')
+        console.log('Database Connection Successful')
     } catch (err) {
         console.log(err.message);
     }
 };
 
-// runing server.....
+// running server.....
 app.listen(PORT,async()=>{
     try {
-        console.log(`Sever Run Successfully http://localhost:${PORT}`);
-        await dataConnenct();
+        console.log(`Sever run successfully on http://localhost:${PORT}`);
+        await dataConnect();
     } catch (error) {
         console.log(error.message);
     }
