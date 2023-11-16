@@ -35,7 +35,7 @@ const userSchema = new Schema(
             trim: true,
             required: true
         },
-        activied:{
+        activated:{
             type: Boolean,
             default: false
         },
