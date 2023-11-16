@@ -1,4 +1,4 @@
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const { validationEmail, validationLength, validationUserName, generateToken } = require("../Helpers/Validation");
 const userModel = require('../Models/User_Model');
 const { sendEmail } = require('../utilities/SentEmail_uts');
