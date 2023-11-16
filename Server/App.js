@@ -8,6 +8,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const expressRateLimit = require('express-rate-limit');
 const morgan = require('morgan');
+const router = require('./Routers/API');
 
 // Import data from env file
 require('dotenv').config();
@@ -34,9 +35,9 @@ app.use(limiter);
 
 
 // listen Router file....
-readdirSync('./Routers').map(R=>app.use('/api/v1',require(`./Routers/${R}`)));
+// readdirSync('./Routers').map(R=>app.use('/api/v1',require(`./Routers/${R}`)));
+app.use('/api/v1', router)
 
-// server error handling .....
 app.use('*',(req,res)=>{
     res.status(404).json({message:"Something is happening please try again."});
 });
