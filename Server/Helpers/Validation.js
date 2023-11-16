@@ -2,8 +2,7 @@ const userModel = require("../Models/User_Model");
 const jwt = require('jsonwebtoken');
 
 exports.validationEmail = (email)=>{
-    return String(email).match(/^([a-z\d\.-]+)@([a-z\d-]+)\.([a-z]{2,12})(\.[a-z]{2,12})?$/
-    );
+    return String(email).match(/^([a-z\d\.-]+)@([a-z\d-]+)\.([a-z]{2,12})(\.[a-z]{2,12})?$/);
 };
 
 exports.validationLength = (text,min,max)=>{
