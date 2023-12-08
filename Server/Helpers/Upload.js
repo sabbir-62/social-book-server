@@ -3,7 +3,7 @@ const multer = require('multer');
 const uploads = (req, res, next) => {
   multer({
     limits: {
-      fileSize: 1000000, // 1MB
+      fileSize: 5000000, // 1MB
     },
     fileFilter: (req, file, cb) => {
       if (

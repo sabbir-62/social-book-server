@@ -9,6 +9,7 @@ const userProfileModel = require('../Models/user_profile_Model');
 const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
 
+//User Registration
 exports.registration_user = async(req)=>{
     try {
 
@@ -56,14 +57,15 @@ exports.registration_user = async(req)=>{
 
        await sendEmail(userData.email,userData.firstName,url);
 
-       return {status:"success",message:"registration successfully."};
+       return {success: true, status:"success",message:"registration successfully."};
 
     } catch (err) {
-        return {status:"Fail",message:"something went wrong.",error:err.message};
+        return {success: false, status:"Fail",message:"something went wrong.",error:err.message};
     }
 };
 
 
+// User activation
 exports.activate_user = async(req)=>{
     try {
         
@@ -85,7 +87,7 @@ exports.activate_user = async(req)=>{
             return {status:"Fail",message:"already activated your account."};
         }
 
-        const userDatas = await userModel.findByIdAndUpdate({_id:verificationData.id},{$set:{activied:true}});
+        const userDatas = await userModel.findByIdAndUpdate({_id:verificationData.id},{$set:{activated:true}});
 
         const profileUserName = userDatas.firstName+" "+userDatas.lastName; 
 
@@ -102,6 +104,8 @@ exports.activate_user = async(req)=>{
     }
 };
 
+
+//User Login
 exports.login_user = async(req)=>{
     try {
         
@@ -146,6 +150,7 @@ exports.login_user = async(req)=>{
 };
 
 
+// Forget password
 exports.forget_password = async(req)=>{
     try {
        
@@ -163,13 +168,13 @@ exports.forget_password = async(req)=>{
             return {status:"Fail",message:"there are no account in this email."};
         };
 
-        if(findUser.activied == false){
+        if(findUser.activated == false){
             return {status:"Fail",message:"please activated your account first."};
         }
 
-        const emailVarification = generateToken({id:findUser._id},"15m");
+        const emailVerification = generateToken({id:findUser._id},"15m");
 
-        const url = `${process.env.BASE_URL}/set-password/${emailVarification}`;
+        const url = `${process.env.BASE_URL}/set-password/${emailVerification}`;
     
         await forgetPassword_URL_sentemail(findUser.email,findUser.firstName,url);
     
@@ -181,6 +186,7 @@ exports.forget_password = async(req)=>{
 };
 
 
+// Set new password
 exports.set_password = async(req)=>{
     try {
         const {id} = req.params;
@@ -219,8 +225,6 @@ exports.set_password = async(req)=>{
 
 
 // user profile.......
-
-
 exports.create_profile = async(req)=>{
     try {
         
