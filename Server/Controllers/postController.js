@@ -12,10 +12,10 @@ const {
     validationLength
 } = require("../Helpers/Validation");
 const mongoose = require('mongoose');
+const GeneralReaction = require('../Models/generalReactionModel');
 const ObjectId = mongoose.Types.ObjectId;
 
 // get all posts ===============
-
 const getPosts = async (req, res) => {
     try {
       // Find all posts, populate comments with specific fields, and select fields from the populated comments
@@ -51,9 +51,7 @@ const getPosts = async (req, res) => {
     }
   };
   
-
 // get single post ===============
-
 const getPost = async (req, res) => {
     try {
       const id = req.params.id;
@@ -81,7 +79,6 @@ const getPost = async (req, res) => {
       res.status(500).json({ success: false, message: 'Internal server error' });
     }
   };
-  
   
 // post add ===========================
 const addPost = async (req, res) => {
@@ -133,7 +130,6 @@ const addPost = async (req, res) => {
                 message: "Your profile is lock.unlock your profile first."
             };
         };
-
 
         if (content) {
             if (!validationLength(content, 1, 1000)) {
@@ -238,7 +234,6 @@ const addPost = async (req, res) => {
     }
 };
 
-
 // update post =============
 const updatePost = async (req, res) => {
     try {
@@ -286,7 +281,6 @@ const updatePost = async (req, res) => {
                 message: "Your profile is lock.unlock your profile first."
             };
         };
-
 
         if (content) {
             if (!validationLength(content, 1, 1000)) {
@@ -349,7 +343,6 @@ const updatePost = async (req, res) => {
             dataHF = [];
         };
 
-
         await postModel.findByIdAndUpdate({
             profileId: data._id,
             _id: req.params.id
@@ -375,12 +368,31 @@ const updatePost = async (req, res) => {
     }
 };
 
-
 // delete post ==========================
-
 const deletePost = async (req, res) => {
     try {
         const id = req.params.id;
+
+        const postId = await postModel.findById(id);
+        if(!postId){
+            res.status(404).json({
+                status : "Failed",
+                message : "Post Not Found..."
+            })
+        }
+        
+        // Find all reactions associated with the post, comments, comment replies, and reply in replies
+        const reactionsToDelete = await GeneralReaction.find({
+            $or: [
+                { targetType: 'Post', targetId: postId },
+                { targetType: 'Comment', targetId: { $in: await Comment.find({ postId: postId }).distinct('_id') } },
+                { targetType: 'CommentReply', targetId: { $in: await CommentReply.find({ postId: postId }).distinct('_id') } },
+                { targetType: 'ReplyInReply', targetId: { $in: await ReplyInReply.find({ postId: postId }).distinct('_id') } },
+            ],
+        });
+
+        // Delete the reactions
+        await GeneralReaction.deleteMany({ _id: { $in: reactionsToDelete.map(reaction => reaction._id) } });
 
         // Delete the post
         await postModel.deleteOne({
@@ -402,7 +414,6 @@ const deletePost = async (req, res) => {
             postId: ReplyInReply._id
         })
 
-
         res.status(200).send({
             success: true,
             message: 'Post was deleted'
@@ -411,7 +422,6 @@ const deletePost = async (req, res) => {
         await serverError(res, 500, error.message);
     }
 };
-
 
 module.exports = {
     getPosts,

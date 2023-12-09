@@ -16,7 +16,7 @@ const toggleReaction = async (req, res) => {
         } = req.body;
 
         // Validation: Check if required fields are present
-        if (!userId || !type) {
+        if (!userId || !type || !targetType || !targetId) {
             return res.status(400).json({
                 success: false,
                 message: 'userId, targetId, and type are required.'
@@ -56,7 +56,9 @@ const toggleReaction = async (req, res) => {
 
         // Validation: Check if the targetId exists in the database
         if (targetType === 'Post') {
-            const post = await Post.findOne({ _id: targetId });
+            const post = await Post.findOne({
+                _id: targetId
+            });
             if (!post) {
                 return res.status(404).json({
                     success: false,
@@ -64,7 +66,9 @@ const toggleReaction = async (req, res) => {
                 });
             }
         } else if (targetType === 'Comment') {
-            const comment = await Comment.findOne({ _id: targetId });
+            const comment = await Comment.findOne({
+                _id: targetId
+            });
             if (!comment) {
                 return res.status(404).json({
                     success: false,
@@ -72,7 +76,9 @@ const toggleReaction = async (req, res) => {
                 });
             }
         } else if (targetType === 'CommentReply') {
-            const commentReply = await CommentReply.findOne({ _id: targetId });
+            const commentReply = await CommentReply.findOne({
+                _id: targetId
+            });
             if (!commentReply) {
                 return res.status(404).json({
                     success: false,
@@ -80,7 +86,9 @@ const toggleReaction = async (req, res) => {
                 });
             }
         } else if (targetType === 'ReplyInReply') {
-            const replyInReply = await ReplyInReply.findOne({ _id: targetId });
+            const replyInReply = await ReplyInReply.findOne({
+                _id: targetId
+            });
             if (!replyInReply) {
                 return res.status(404).json({
                     success: false,
@@ -113,7 +121,7 @@ const toggleReaction = async (req, res) => {
             if (existingReaction.type === type) {
                 // If it's the same reaction type, remove the reaction
                 await existingReaction.deleteOne();
-                return res.status(200).json({
+                res.status(200).json({
                     success: true,
                     message: 'Reaction removed successfully'
                 });
@@ -121,7 +129,7 @@ const toggleReaction = async (req, res) => {
                 // If it's a different reaction type, update the existing reaction
                 existingReaction.type = type;
                 await existingReaction.save();
-                return res.status(200).json({
+                res.status(200).json({
                     success: true,
                     message: 'Reaction updated successfully'
                 });
@@ -134,7 +142,7 @@ const toggleReaction = async (req, res) => {
                 targetId,
                 type
             });
-            return res.status(200).json({
+            res.status(200).json({
                 success: true,
                 message: 'Reaction added successfully'
             });
@@ -153,12 +161,13 @@ const toggleReaction = async (req, res) => {
 
     } catch (error) {
         console.error(error);
-        return res.status(500).json({
+        res.status(500).json({
             success: false,
             message: 'Failed to update reaction'
         });
     }
 };
+
 
 // Helper function to update post reaction count=================
 const updatePostReactionCount = async (postId) => {
@@ -215,7 +224,10 @@ const updateReplyInReplyReactionCount = async (nestedReplyId) => {
 // get specificReactions=========================================
 const getSpecificReactions = async (req, res) => {
     try {
-        const { targetType, targetId } = req.body;
+        const {
+            targetType,
+            targetId
+        } = req.body;
 
         // Validate targetType and targetId
         if (!targetType || !targetId) {
@@ -232,10 +244,18 @@ const getSpecificReactions = async (req, res) => {
         });
 
         // Finding targeted id for validation check
-        const post = await Post.findOne({ _id: targetId });
-        const comment = await Comment.findOne({ _id: targetId });
-        const reply = await CommentReply.findOne({ _id: targetId });
-        const nestedReply = await ReplyInReply.findOne({ _id: targetId });
+        const post = await Post.findOne({
+            _id: targetId
+        });
+        const comment = await Comment.findOne({
+            _id: targetId
+        });
+        const reply = await CommentReply.findOne({
+            _id: targetId
+        });
+        const nestedReply = await ReplyInReply.findOne({
+            _id: targetId
+        });
 
         // Validation check
         if (!post && !comment && !reply && !nestedReply) {
@@ -258,7 +278,10 @@ const getSpecificReactions = async (req, res) => {
 
         // Iterate through reactions to track user-specific counts for each type
         reactions.forEach((reaction) => {
-            const { userId, type } = reaction;
+            const {
+                userId,
+                type
+            } = reaction;
 
             if (!reactionTypeCounts[type]) {
                 reactionTypeCounts[type] = {};
@@ -283,11 +306,13 @@ const getSpecificReactions = async (req, res) => {
         for (const type of reactionTypesOrder) {
             const users = await Promise.all(
                 Object.keys(reactionTypeCounts[type])
-                    .sort((a, b) => reactionTypeCounts[type][b] - reactionTypeCounts[type][a])
-                    .map(async (userId) => {
-                        const user = await userProfileModel.findOne({ _id: userId });
-                        return user ? user.userName : 'Unknown';
-                    })
+                .sort((a, b) => reactionTypeCounts[type][b] - reactionTypeCounts[type][a])
+                .map(async (userId) => {
+                    const user = await userProfileModel.findOne({
+                        _id: userId
+                    });
+                    return user ? user.userName : 'Unknown';
+                })
             );
             sortedUserLists[type] = {
                 totalCount: totalCounts[type],

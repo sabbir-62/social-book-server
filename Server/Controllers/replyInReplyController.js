@@ -4,6 +4,7 @@ const CommentReply = require("../Models/commentReplyModel");
 const Notification = require("../Models/notificationModel");
 const ReplyInReply = require("../Models/replyInReplyModel");
 const userProfileModel = require("../Models/user_profile_Model");
+const GeneralReaction = require('../Models/generalReactionModel');
 
 // Function to upload a file to Cloudinary
 const uploadToCloudinary = async (file) => {
@@ -200,25 +201,32 @@ const deleteReplyInReply = async (req, res) => {
             });
         }
 
-        const replyInReply = await ReplyInReply.findById(id);
+        // Find the ReplyInReply by ID
+        const replyInReplyId = await ReplyInReply.findById(id);
 
-        if (!replyInReply) {
+        if (!replyInReplyId) {
             return res.status(404).json({
                 status: "Failed",
                 message: "Reply In Reply not found",
             });
         }
 
-        const replyInReplyId = replyInReply.commentReplyId; // Assuming you have a field named commentReplyId
+        // Delete the ReplyInReply document
+        await ReplyInReply.deleteOne({ _id: replyInReplyId });
 
-        await ReplyInReply.deleteOne({
-            _id: id
+        // Find all reactions associated with the ReplyInReply
+        const reactionsToDelete = await GeneralReaction.find({
+            targetType: 'ReplyInReply',
+            targetId: replyInReplyId,
         });
+
+        // Delete the reactions, handle errors
+        await GeneralReaction.deleteMany({ _id: { $in: reactionsToDelete.map(reaction => reaction._id) } })
 
         // Remove the deleted ReplyInReply ID from the CommentReply model
         await CommentReply.findByIdAndUpdate(
             replyInReplyId,
-            { $pull: { nestedReplies :  id } },
+            { $pull: { nestedReplies: id } },
             { new: true }
         );
 
@@ -234,6 +242,7 @@ const deleteReplyInReply = async (req, res) => {
         });
     }
 };
+
 
 
 module.exports = {

@@ -8,6 +8,7 @@ const userProfileModel = require("../Models/user_profile_Model");
 const {
     clientError
 } = require("./error");
+const GeneralReaction = require('../Models/generalReactionModel');
 
 // Function to upload a file to Cloudinary
 const uploadToCloudinary = async (file) => {
@@ -204,17 +205,29 @@ const deleteCommentReply = async (req, res) => {
         }
 
         // Retrieve the comment reply
-        const commentReply = await CommentReply.findById(id);
+        const commentReplyId = await CommentReply.findById(id);
 
-        if (!commentReply) {
+        if (!commentReplyId) {
             return res.status(404).json({
                 status: "Failed",
                 message: "Comment Reply not found",
             });
         }
 
+        
+        // Find all reactions associated with the comment replies, and reply in replies
+        const reactionsToDelete = await GeneralReaction.find({
+            $or: [
+                { targetType: 'CommentReply', targetId: commentReplyId },
+                { targetType: 'ReplyInReply', targetId: { $in: await ReplyInReply.find({ commentReplyId: commentReplyId }).distinct('_id') } },
+            ],
+        });
+
+        // Delete the reactions
+        await GeneralReaction.deleteMany({ _id: { $in: reactionsToDelete.map(reaction => reaction._id) } });
+
         // Obtain the ID of the associated comment
-        const commentId = commentReply.commentId;
+        const commentId = commentReplyId.commentId;
 
         // Delete CommentReply
         await CommentReply.deleteOne({

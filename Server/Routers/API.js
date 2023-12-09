@@ -154,7 +154,7 @@ router.get('/peopleYouKnowMe/:userId',tokenVerify, peopleYouKnowMe);
 router.post('/removePeopleYouMayKnowMe',tokenVerify, removeFromPeopleYouKnow);
 
 // general reaction router section ==============================
-router.post('/addReaction',tokenVerify, toggleReaction);
+router.post('/toggleReaction',tokenVerify, toggleReaction);
 router.get('/getSpecificReactions',tokenVerify, getSpecificReactions);
 router.get('/getAllReactions',tokenVerify, getTotalReactionsCount);
 
