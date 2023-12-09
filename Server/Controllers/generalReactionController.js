@@ -5,7 +5,7 @@ const Post = require("../Models/postModel");
 const ReplyInReply = require("../Models/replyInReplyModel");
 const userProfileModel = require("../Models/user_profile_Model");
 
-// Add or remove reaction based on user's click
+// Add or remove reaction based on user's click=========
 const toggleReaction = async (req, res) => {
     try {
         const {
@@ -14,6 +14,80 @@ const toggleReaction = async (req, res) => {
             targetId,
             type
         } = req.body;
+
+        // Validation: Check if required fields are present
+        if (!userId || !type) {
+            return res.status(400).json({
+                success: false,
+                message: 'userId, targetId, and type are required.'
+            });
+        }
+
+        // Validation: Check if targetType is present and valid
+        if (targetType && !['Post', 'Comment', 'CommentReply', 'ReplyInReply'].includes(targetType)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid targetType.'
+            });
+        }
+
+        // Validation: Check if targetId is present and valid (if targetType is provided)
+        if (targetType && targetType !== 'Post' && !targetId) {
+            return res.status(400).json({
+                success: false,
+                message: 'targetId is required for targetType other than Post.'
+            });
+        }
+
+        // Validation: Check additional constraints based on targetType
+        if (targetType === 'Comment' && !targetId) {
+            return res.status(400).json({
+                success: false,
+                message: 'targetId is required for Comment targetType.'
+            });
+        }
+
+        if ((targetType === 'CommentReply' || targetType === 'ReplyInReply') && !targetId) {
+            return res.status(400).json({
+                success: false,
+                message: 'targetId is required for CommentReply or ReplyInReply targetType.'
+            });
+        }
+
+        // Validation: Check if the targetId exists in the database
+        if (targetType === 'Post') {
+            const post = await Post.findOne({ _id: targetId });
+            if (!post) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Post not found.'
+                });
+            }
+        } else if (targetType === 'Comment') {
+            const comment = await Comment.findOne({ _id: targetId });
+            if (!comment) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Comment not found.'
+                });
+            }
+        } else if (targetType === 'CommentReply') {
+            const commentReply = await CommentReply.findOne({ _id: targetId });
+            if (!commentReply) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'CommentReply not found.'
+                });
+            }
+        } else if (targetType === 'ReplyInReply') {
+            const replyInReply = await ReplyInReply.findOne({ _id: targetId });
+            if (!replyInReply) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'ReplyInReply not found.'
+                });
+            }
+        }
 
         // Check if the user has already reacted
         const existingReaction = await GeneralReaction.findOne({
@@ -34,13 +108,12 @@ const toggleReaction = async (req, res) => {
             });
         }
 
-
         if (existingReaction) {
             // If the user has already reacted, check if it's the same reaction type
             if (existingReaction.type === type) {
                 // If it's the same reaction type, remove the reaction
                 await existingReaction.deleteOne();
-                res.status(200).json({
+                return res.status(200).json({
                     success: true,
                     message: 'Reaction removed successfully'
                 });
@@ -48,7 +121,7 @@ const toggleReaction = async (req, res) => {
                 // If it's a different reaction type, update the existing reaction
                 existingReaction.type = type;
                 await existingReaction.save();
-                res.status(200).json({
+                return res.status(200).json({
                     success: true,
                     message: 'Reaction updated successfully'
                 });
@@ -61,7 +134,7 @@ const toggleReaction = async (req, res) => {
                 targetId,
                 type
             });
-            res.status(200).json({
+            return res.status(200).json({
                 success: true,
                 message: 'Reaction added successfully'
             });
@@ -80,14 +153,14 @@ const toggleReaction = async (req, res) => {
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             message: 'Failed to update reaction'
         });
     }
 };
 
-// Helper function to update post reaction count
+// Helper function to update post reaction count=================
 const updatePostReactionCount = async (postId) => {
     const reactionCount = await GeneralReaction.countDocuments({
         targetType: 'Post',
@@ -100,7 +173,7 @@ const updatePostReactionCount = async (postId) => {
     });
 };
 
-// Helper function to update comment reaction count
+// Helper function to update comment reaction count===========
 const updateCommentReactionCount = async (commentId) => {
     const reactionCount = await GeneralReaction.countDocuments({
         targetType: 'Comment',
@@ -113,7 +186,7 @@ const updateCommentReactionCount = async (commentId) => {
     });
 };
 
-// Helper function to update reply reaction count
+// Helper function to update reply reaction count===========
 const updateCommentReplyReactionCount = async (commentReplyId) => {
     const reactionCount = await GeneralReaction.countDocuments({
         targetType: 'CommentReply',
@@ -139,10 +212,18 @@ const updateReplyInReplyReactionCount = async (nestedReplyId) => {
     });
 };
 
-
+// get specificReactions=========================================
 const getSpecificReactions = async (req, res) => {
     try {
         const { targetType, targetId } = req.body;
+
+        // Validate targetType and targetId
+        if (!targetType || !targetId) {
+            return res.status(400).json({
+                success: false,
+                message: 'targetType and targetId are required.',
+            });
+        }
 
         // Fetch reactions based on targetType and targetId
         const reactions = await GeneralReaction.find({
@@ -161,6 +242,14 @@ const getSpecificReactions = async (req, res) => {
             return res.status(404).json({
                 success: false,
                 message: "Target ID Not Found"
+            });
+        }
+
+        // Check if there are no reactions
+        if (!reactions || reactions.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "No reactions found for the specified target."
             });
         }
 
@@ -220,16 +309,22 @@ const getSpecificReactions = async (req, res) => {
     }
 };
 
-
-
-// get all reactions....====================================
-
+// get all reactions...=======================================
 const getTotalReactionsCount = async (req, res) => {
     try {
         const {
             targetType,
             targetId
         } = req.body;
+
+        // Validate targetType and targetId
+        if (!targetType || !targetId) {
+            return res.status(400).json({
+                success: false,
+                message: 'targetType and targetId are required.',
+            });
+        }
+
         const totalReactionsCount = await GeneralReaction.countDocuments({
             targetType,
             targetId
@@ -254,6 +349,15 @@ const getTotalReactionsCount = async (req, res) => {
             return res.status(404).json({
                 status: "Failed",
                 message: "Target ID Not Found..."
+            });
+        }
+
+        // Validate that the targetType matches the type of the found document
+        if ((targetType === 'Post' && !post) || (targetType === 'Comment' && !comment) ||
+            (targetType === 'CommentReply' && !reply) || (targetType === 'ReplyInReply' && !nestedReply)) {
+            return res.status(400).json({
+                status: "Failed",
+                message: "targetType and targetId do not match."
             });
         }
 
