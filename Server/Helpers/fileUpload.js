@@ -1,9 +1,10 @@
-const multer = require("multer");
+const multer = require('multer');
 
-const uploads = (req, res, next) => {
+const fileUpload = (req, res, next) => {
     multer({
+        storage: multer.diskStorage({}),
         limits: {
-            fileSize: 1000000, // 1MB
+            fileSize: 1024 * 1024 * 3, // 3MB
         },
         fileFilter: (req, file, cb) => {
             if (
@@ -11,19 +12,20 @@ const uploads = (req, res, next) => {
                 file.mimetype === 'image/jpg' ||
                 file.mimetype === 'image/jpeg' ||
                 file.mimetype === 'image/gif' ||
-                file.mimetype === 'image/svg+xml'
+                file.mimetype === 'image/svg+xml' ||
+                file.mimetype === 'video/mp4' ||
+                file.mimetype === 'audio/mpeg' ||
+                file.mimetype === 'video/webm'
             ) {
                 return cb(null, true);
             } else {
-                const error = new Error('Only .png, .jpg, .gif, .svg or .jpeg format allowed.');
+                const error = new Error('Only .png, .jpg, .gif, .svg ,.jpeg , .mp4 , mp3 or .webm format allowed.');
                 error.status = 400;
                 return cb(error);
             }
         },
     }).fields([{
-        name: 'banner'
-    }, {
-        name: 'image'
+        name: 'img_video'
     }])(req, res, (err) => {
         if (err) {
             // Handle the error by sending it as a response
@@ -36,4 +38,4 @@ const uploads = (req, res, next) => {
     });
 };
 
-module.exports = uploads;
+module.exports = fileUpload;
