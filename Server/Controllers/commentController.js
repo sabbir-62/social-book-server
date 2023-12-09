@@ -173,7 +173,7 @@ const getAllComments = async (req, res) => {
       const comments = await Comment.find()
         .select('commentContent img_video') 
         .populate({
-          path: 'replies',
+          path: 'commentReplies',
           select: 'commentReplyContent img_video', 
         });
   

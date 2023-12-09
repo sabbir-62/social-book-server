@@ -53,8 +53,7 @@ const sendFriendRequest = async (req, res) => {
             senderReceivedRequestsCount +
             receiverReceivedRequestsCount +
             receiverSentRequestsCount;
-
-
+            
         if (combinedFriendCount >= 5) {
             return res.status(400).json({
                 status: 'failed',
