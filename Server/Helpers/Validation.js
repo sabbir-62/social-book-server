@@ -31,7 +31,7 @@ exports.validationUserName = async (userName) => {
 };
 
 exports.generateToken = (payload, exp) => {
-    return jwt.sign(payload, process.env.KEY, {
+    return jwt.sign(payload, process.env.KEY||"ABCD", {
         expiresIn: exp
     });
 };

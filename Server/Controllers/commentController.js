@@ -9,6 +9,7 @@ const {
 } = require("./error");
 const userProfileModel = require('../Models/user_profile_Model');
 const cloudinary = require("../Helpers/Cloudinary");
+const GeneralReaction = require('../Models/generalReactionModel');
 
 // Function to upload a file to Cloudinary=======================
 const uploadToCloudinary = async (file) => {
@@ -27,6 +28,19 @@ const uploadToCloudinary = async (file) => {
     }
 };
 
+// comment count updated =============================
+const updateCommentCount = async (postId) => {
+    try {
+        
+        const commentCount = await Comment.countDocuments({ postId });
+
+        await Post.findByIdAndUpdate(postId, { commentCount });
+        
+        return true;
+    } catch (error) {
+        return false;
+    }
+};
 // create comment ==========================================
 const createComment = async (req, res) => {
     try {
@@ -86,6 +100,9 @@ const createComment = async (req, res) => {
             img_video: imgVideoUploadResult ? imgVideoUploadResult.secure_url : null,
         }).save();
 
+        // update comment count==========
+        await updateCommentCount(postId);
+
         const newNotification = new Notification({
             userId: postOwnerId,
             message: 'You have a new comment on your post.',
@@ -126,7 +143,7 @@ const readComment = async (req, res) => {
         }
 
         const commentRead = await Comment.findById(id).select('commentContent img_video').populate({
-            path: 'replies',
+            path: 'commentReplies',
             select: 'commentReplyContent img_video', 
         });
 
@@ -156,7 +173,7 @@ const getAllComments = async (req, res) => {
       const comments = await Comment.find()
         .select('commentContent img_video') 
         .populate({
-          path: 'replies',
+          path: 'commentReplies',
           select: 'commentReplyContent img_video', 
         });
   
@@ -171,9 +188,8 @@ const getAllComments = async (req, res) => {
         message: error.message,
       });
     }
-  };
+};
   
-
 // update Comment===============================================
 const updateComment = async (req, res) => {
     try {
@@ -221,51 +237,64 @@ const updateComment = async (req, res) => {
 // comment delete =================================================
 const deleteComment = async (req, res) => {
     try {
-        const id = req.params.id;
+        const commentId = req.params.id;
 
         // Validate that the provided ID is a valid ObjectId
-        if (!mongoose.Types.ObjectId.isValid(id)) {
+        if (!mongoose.Types.ObjectId.isValid(commentId)) {
             return res.status(400).json({
                 status: "Failed",
                 message: "Invalid ID format",
             });
         }
 
-        const comment = await Comment.findById(id);
-
+        // Find the associated post
+        const comment = await Comment.findById(commentId);
         if (!comment) {
             return res.status(404).json({
                 status: "Failed",
                 message: "Comment not found",
             });
         }
+        const postId = comment.postId;
 
-        // Find the associated post
-        const postId = comment.postId; 
+        // Find all reactions associated with the comment, comment replies, and reply in replies
+        const reactionsToDelete = await GeneralReaction.find({
+            $or: [
+                { targetType: 'Comment', targetId: commentId },
+                { targetType: 'CommentReply', targetId: { $in: await CommentReply.find({ commentId: commentId }).distinct('_id') } },
+                { targetType: 'ReplyInReply', targetId: { $in: await ReplyInReply.find({ commentId: commentId }).distinct('_id') } },
+            ],
+        });
+
+        // Delete the reactions
+        await GeneralReaction.deleteMany({ _id: { $in: reactionsToDelete.map(reaction => reaction._id) } });
 
         // Delete Comment
         await Comment.deleteOne({
-            _id: id
+            _id: commentId
         });
 
         // Delete associated CommentReply documents
         await CommentReply.deleteMany({
-            commentId: id
+            commentId: commentId
         });
 
         // Delete associated ReplyInReply documents
         await ReplyInReply.deleteMany({
-            commentId: id
+            commentId: commentId
         });
 
         // Remove comment from the associated post
         await Post.findByIdAndUpdate(
             postId,
             {
-                $pull: { comments: id } 
+                $pull: { comments: commentId } 
             },
             { new: true }
         );
+
+        // update comment count
+        await updateCommentCount(postId);
 
         return res.status(200).json({
             status: "Success",

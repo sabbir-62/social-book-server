@@ -59,7 +59,8 @@ const {
     commentReplyCreate,
     getCommentReply,
     updateCommentReply,
-    deleteCommentReply
+    deleteCommentReply,
+    getAllCommentReplies
 } = require('../Controllers/commentReplyController');
 
 // replyInReply Controller import ===========================
@@ -130,6 +131,7 @@ router.delete('/deleteComment/:id',tokenVerify, deleteComment);
 // reply section==============================================
 router.post('/createCommentReply',fileUpload,tokenVerify, commentReplyCreate);
 router.get('/getCommentReply/:id',tokenVerify, getCommentReply);
+router.get('/getAllCommentReplies', tokenVerify, getAllCommentReplies);
 router.put('/updateCommentReply/:id',fileUpload,tokenVerify, updateCommentReply);
 router.delete('/deleteCommentReply/:id',tokenVerify, deleteCommentReply);
 
@@ -154,7 +156,7 @@ router.get('/peopleYouKnowMe/:userId',tokenVerify, peopleYouKnowMe);
 router.post('/removePeopleYouMayKnowMe',tokenVerify, removeFromPeopleYouKnow);
 
 // general reaction router section ==============================
-router.post('/addReaction',tokenVerify, toggleReaction);
+router.post('/toggleReaction',tokenVerify, toggleReaction);
 router.get('/getSpecificReactions',tokenVerify, getSpecificReactions);
 router.get('/getAllReactions',tokenVerify, getTotalReactionsCount);
 
@@ -167,4 +169,4 @@ router.post("/unFollow",tokenVerify, unfollowUser);
 router.get('/getAllFollowing/:userId',tokenVerify, getAllFollowing);
 router.get('/getAllFollowers/:userId',tokenVerify, getAllFollowers);
 
-module.exports = router;
+module.exports = router; 

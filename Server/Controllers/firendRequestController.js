@@ -38,6 +38,29 @@ const sendFriendRequest = async (req, res) => {
             });
         }
 
+        // Check if the combined friend count exceeds 500
+        const senderFriendsCount = sender.friends.length;
+        const receiverFriendsCount = receiver.friends.length;
+        const senderSentRequestsCount = sender.sentFriendRequests.length;
+        const senderReceivedRequestsCount = sender.friendRequests.length;
+        const receiverReceivedRequestsCount = receiver.friendRequests.length;
+        const receiverSentRequestsCount = receiver.sentFriendRequests.length;
+
+        const combinedFriendCount =
+            senderFriendsCount +
+            receiverFriendsCount +
+            senderSentRequestsCount +
+            senderReceivedRequestsCount +
+            receiverReceivedRequestsCount +
+            receiverSentRequestsCount;
+            
+        if (combinedFriendCount >= 5) {
+            return res.status(400).json({
+                status: 'failed',
+                message: 'Users have reached the maximum limit of friends',
+            });
+        }
+
         // Check if there is an existing friend request
         const existingRequest = await FriendRequest.findOne({
             sender: senderId,
@@ -383,19 +406,19 @@ const getAllFriendRequestsReceived = async (req, res) => {
         // Extract and send the friend requests data with detailed information
         const friendRequests = user.friendRequests || [];
 
-                // Check if friendRequests is empty or null
-                if (friendRequests.length===0) {
-                    return res.status(400).json({
-                        status: 'failed',
-                        message: 'No friend requests found for the user',
-                    });
-                }
-        
-            // Map friendRequests to include only id and userName
-            const friendRequestsData = friendRequests.map(friend => ({
-                id: friend.id,
-                userName: friend.userName,
-            }));
+        // Check if friendRequests is empty or null
+        if (friendRequests.length === 0) {
+            return res.status(400).json({
+                status: 'failed',
+                message: 'No friend requests found for the user',
+            });
+        }
+
+        // Map friendRequests to include only id and userName
+        const friendRequestsData = friendRequests.map(friend => ({
+            id: friend.id,
+            userName: friend.userName,
+        }));
 
         res.status(200).json({
             status: 'success',
@@ -433,18 +456,18 @@ const getSentFriendRequests = async (req, res) => {
         const sentFriendRequests = user.sentFriendRequests || [];
 
         // Check if friendRequests is empty or null
-        if (sentFriendRequests.length===0) {
+        if (sentFriendRequests.length === 0) {
             return res.status(400).json({
                 status: 'failed',
                 message: 'No Sent friend requests found for the user',
             });
         }
 
-    // Map friendRequests to include only id and userName
-    const sentfriendRequestsData = sentFriendRequests.map(friend => ({
-        id: friend.id,
-        userName: friend.userName,
-    }));
+        // Map friendRequests to include only id and userName
+        const sentfriendRequestsData = sentFriendRequests.map(friend => ({
+            id: friend.id,
+            userName: friend.userName,
+        }));
 
         res.status(200).json({
             status: 'success',
@@ -526,10 +549,8 @@ const findFriends = async (req, res) => {
         } = req.body;
 
         // Use a MongoDB query to find friends based on the search criteria
-        const friends = await userProfileModel.find(
-            {
-                $or: [
-                    {
+        const friends = await userProfileModel.find({
+                $or: [{
                         userName: {
                             $regex: searchQuery,
                             $options: 'i'
@@ -544,16 +565,20 @@ const findFriends = async (req, res) => {
                 ],
             },
             // Projection to include only userId and userName
-            { userId: 1, userName: 1, _id: 0 }
+            {
+                userId: 1,
+                userName: 1,
+                _id: 0
+            }
         );
 
-// Check if no friends are found
-if (friends.length === 0) {
-    return res.status(404).json({
-        success: false,
-        message: 'No friends found matching the search criteria'
-    });
-}
+        // Check if no friends are found
+        if (friends.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'No friends found matching the search criteria'
+            });
+        }
 
         res.status(200).json({
             success: true,
@@ -610,10 +635,14 @@ const getMutualFriends = async (req, res) => {
 // people you know me===================================
 const peopleYouKnowMe = async (req, res) => {
     try {
-        const { userId } = req.params;
+        const {
+            userId
+        } = req.params;
 
         // Find the user
-        const currentUser = await userProfileModel.findOne({ _id: userId });
+        const currentUser = await userProfileModel.findOne({
+            _id: userId
+        });
 
         if (!currentUser) {
             return res.status(404).json({
@@ -641,9 +670,15 @@ const peopleYouKnowMe = async (req, res) => {
         // Find people who are not friends and not in friend requests
         const potentialFriends = await userProfileModel
             .find({
-                _id: { $ne: userId },
-                _id: { $nin: currentFriends },
-                _id: { $nin: friendRequestUserIds },
+                _id: {
+                    $ne: userId
+                },
+                _id: {
+                    $nin: currentFriends
+                },
+                _id: {
+                    $nin: friendRequestUserIds
+                },
             })
             .limit(10);
 
@@ -665,10 +700,15 @@ const peopleYouKnowMe = async (req, res) => {
 // remove from people you may know me ==========================
 const removeFromPeopleYouKnow = async (req, res) => {
     try {
-        const { userId, removeUserId } = req.body;
+        const {
+            userId,
+            removeUserId
+        } = req.body;
 
         // Find the current user
-        const currentUser = await userProfileModel.findOne({ _id: userId });
+        const currentUser = await userProfileModel.findOne({
+            _id: userId
+        });
 
         if (!currentUser) {
             return res.status(404).json({
@@ -677,11 +717,11 @@ const removeFromPeopleYouKnow = async (req, res) => {
         }
 
         // Ensure currentUser.peopleYouMayKnow is an array
-        currentUser.peopleYouMayKnow = Array.isArray(currentUser.peopleYouMayKnow)
-            ? currentUser.peopleYouMayKnow.filter((user) => user.toString() !== removeUserId)
-            : [];
+        currentUser.peopleYouMayKnow = Array.isArray(currentUser.peopleYouMayKnow) ?
+            currentUser.peopleYouMayKnow.filter((user) => user.toString() !== removeUserId) :
+            [];
 
-            // Check if the user was already removed
+        // Check if the user was already removed
         if (currentUser.peopleYouMayKnow.length === 0) {
             return res.status(400).json({
                 error: 'User already removed from People You May Know',
