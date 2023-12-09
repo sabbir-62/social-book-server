@@ -114,7 +114,7 @@ const commentReplyCreate = async (req, res) => {
 };
 
 
-// get comment reply ====================
+// get single comment reply ====================
 const getCommentReply = async (req, res) => {
     try {
         const id = req.params.id;
@@ -127,7 +127,11 @@ const getCommentReply = async (req, res) => {
             });
         }
 
-        const commentReplyGet = await CommentReply.findById(id).select("commentReplyContent img_video");
+        const commentReplyGet = await CommentReply.findById(id).select("commentReplyContent img_video")
+        .populate({
+            path: 'nestedReplies',
+            select: 'commentReplyContent img_video',
+        });
 
         if (!commentReplyGet) {
             return res.status(404).json({
@@ -148,6 +152,28 @@ const getCommentReply = async (req, res) => {
     }
 };
 
+// get all comment reply=======================
+const getAllCommentReplies = async (req, res) => {
+    try {
+        const commentReplies = await CommentReply.find()
+            .select("commentReplyContent img_video")
+            .populate({
+                path: 'nestedReplies',
+                select: 'commentReplyContent img_video',
+            });
+
+        return res.status(200).json({
+            status: "Success",
+            data: commentReplies,
+        });
+    } catch (error) {
+        console.error('Unexpected error in getAllCommentReplies:', error);
+        return res.status(500).json({
+            status: "Failed",
+            message: error.message,
+        });
+    }
+};
 
 // update comment reply======================
 const updateCommentReply = async (req, res) => {
@@ -261,6 +287,7 @@ const deleteCommentReply = async (req, res) => {
 module.exports = {
     commentReplyCreate,
     getCommentReply,
+    getAllCommentReplies,
     updateCommentReply,
     deleteCommentReply
 }

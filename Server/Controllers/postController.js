@@ -413,7 +413,7 @@ const deletePost = async (req, res) => {
         await ReplyInReply.deleteMany({
             postId: ReplyInReply._id
         })
-
+        
         res.status(200).send({
             success: true,
             message: 'Post was deleted'

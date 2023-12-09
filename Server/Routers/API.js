@@ -59,7 +59,8 @@ const {
     commentReplyCreate,
     getCommentReply,
     updateCommentReply,
-    deleteCommentReply
+    deleteCommentReply,
+    getAllCommentReplies
 } = require('../Controllers/commentReplyController');
 
 // replyInReply Controller import ===========================
@@ -130,6 +131,7 @@ router.delete('/deleteComment/:id',tokenVerify, deleteComment);
 // reply section==============================================
 router.post('/createCommentReply',fileUpload,tokenVerify, commentReplyCreate);
 router.get('/getCommentReply/:id',tokenVerify, getCommentReply);
+router.get('/getAllCommentReplies', tokenVerify, getAllCommentReplies);
 router.put('/updateCommentReply/:id',fileUpload,tokenVerify, updateCommentReply);
 router.delete('/deleteCommentReply/:id',tokenVerify, deleteCommentReply);
 

@@ -28,6 +28,19 @@ const uploadToCloudinary = async (file) => {
     }
 };
 
+// comment count updated =============================
+const updateCommentCount = async (postId) => {
+    try {
+        
+        const commentCount = await Comment.countDocuments({ postId });
+
+        await Post.findByIdAndUpdate(postId, { commentCount });
+        
+        return true;
+    } catch (error) {
+        return false;
+    }
+};
 // create comment ==========================================
 const createComment = async (req, res) => {
     try {
@@ -87,6 +100,9 @@ const createComment = async (req, res) => {
             img_video: imgVideoUploadResult ? imgVideoUploadResult.secure_url : null,
         }).save();
 
+        // update comment count==========
+        await updateCommentCount(postId);
+
         const newNotification = new Notification({
             userId: postOwnerId,
             message: 'You have a new comment on your post.',
@@ -127,7 +143,7 @@ const readComment = async (req, res) => {
         }
 
         const commentRead = await Comment.findById(id).select('commentContent img_video').populate({
-            path: 'replies',
+            path: 'commentReplies',
             select: 'commentReplyContent img_video', 
         });
 
@@ -172,9 +188,8 @@ const getAllComments = async (req, res) => {
         message: error.message,
       });
     }
-  };
+};
   
-
 // update Comment===============================================
 const updateComment = async (req, res) => {
     try {
@@ -277,6 +292,9 @@ const deleteComment = async (req, res) => {
             },
             { new: true }
         );
+
+        // update comment count
+        await updateCommentCount(postId);
 
         return res.status(200).json({
             status: "Success",
