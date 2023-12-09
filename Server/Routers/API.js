@@ -167,4 +167,4 @@ router.post("/unFollow",tokenVerify, unfollowUser);
 router.get('/getAllFollowing/:userId',tokenVerify, getAllFollowing);
 router.get('/getAllFollowers/:userId',tokenVerify, getAllFollowers);
 
-module.exports = router;
+module.exports = router; 
