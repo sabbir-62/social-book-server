@@ -1,33 +1,32 @@
-const { Schema, model, default: mongoose } = require('mongoose');
+const mongoose = require('mongoose');
 
-const replyInReplySchema = new Schema({
-    userId : {
-        type : mongoose.Schema.Types.ObjectId,
-        required : true,
-        ref : "User"
-    },
-    commentId: {
+const replyInReplySchema = new mongoose.Schema({
+    userId: {
         type: mongoose.Schema.Types.ObjectId,
-        required : true,
-        ref : "comment"
-    }, 
-    commentReplyId : {
-        type : mongoose.Schema.Types.ObjectId,
-        required : true,
-        ref : "commentReply"
+        required: true,
+        ref: "userProfile"
+    },
+    commentReplyId: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: "commentReply"
     },
     replyInReplyContent: {
         type: String,
-        required: [true, 'Reply In Reply Content is required'],
-        trim : true
+        min: [3, 'Reply In Reply Content Minimum 3 Charecter is required'],
+        trim: true
     },
-    image : {
-        type : String
+    img_video: {
+        type: String
     },
-    video : {
-        type : String
-    }
-}, {timestamps : true, versionKey : false});
+    reactionCount: {
+        type: Number,
+        default: 0,
+    },
+}, {
+    timestamps: true,
+    versionKey: false
+});
 
-const ReplyInReply = model('replyInReply', replyInReplySchema);
+const ReplyInReply = mongoose.model('replyInReply', replyInReplySchema);
 module.exports = ReplyInReply;
