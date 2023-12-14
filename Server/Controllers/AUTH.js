@@ -51,7 +51,7 @@ exports.profile_block_pin_save = async (req, res) => {
     res.status(200).json(result);
 };
 
-exports.block_usre_get = async (req, res) => {
+exports.block_user_get = async (req, res) => {
     const result = await block_usre_get(req);
     res.status(200).json(result);
 };
