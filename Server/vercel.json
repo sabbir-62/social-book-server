@@ -1,11 +1,15 @@
 {
   "version": 2,
-  "name": "social-book-server",
-  "builds": [{ "src": "App.js", "use": "@vercel/node" }],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/App.js"
-    }
-  ]
+  "builds": [
+{
+  "src": "./server.js",
+  "use": "@now/node"
+}
+],
+"routes": [
+{
+"src": "/(.*)",
+"dest": "./server.js"
+}
+]
 }
