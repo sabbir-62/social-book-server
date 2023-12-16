@@ -3,7 +3,7 @@ const {
     app,
     mongoose,
     DATA
-} = require('./App');
+} = require('./app');
 
 // Database connection.... 
 const dataConnect = async () => {
@@ -16,9 +16,9 @@ const dataConnect = async () => {
 };
 
 // running server.....
-app.listen(PORT||8500, async () => {
+app.listen(PORT, async () => {
     try {
-        console.log(`Sever run successfully on http://localhost:${PORT||8500}`);
+        console.log(`Sever run successfully on http://localhost:${PORT}`);
         await dataConnect();
     } catch (error) {
         console.log(error.message);
