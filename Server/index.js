@@ -3,7 +3,7 @@ const {
     app,
     mongoose,
     DATA
-} = require('./app');
+} = require('./app.js');
 
 // Database connection.... 
 const dataConnect = async () => {
