@@ -113,6 +113,13 @@ const {
 const postUpload = require('../Helpers/PostUpload');
 const fileUpload = require('../Helpers/fileUpload');
 
+// message or converstions controller imports========================
+const { 
+    getConversations, 
+    getMessages, 
+    sendMessage 
+} = require('../Controllers/messageController');
+
 // post Rout section=========================================
 router.get('/getPosts', tokenVerify, getPosts);
 router.get('/getPost/:id', tokenVerify, getPost);
@@ -168,5 +175,11 @@ router.post("/addFollow",tokenVerify, followUser);
 router.post("/unFollow",tokenVerify, unfollowUser);
 router.get('/getAllFollowing/:userId',tokenVerify, getAllFollowing);
 router.get('/getAllFollowers/:userId',tokenVerify, getAllFollowers);
+
+// converstion or message router end poing ========================
+router.get("/conversations", tokenVerify, getConversations);
+router.get("/:otherUserId", tokenVerify, getMessages);
+router.post("/", tokenVerify, sendMessage);
+
 
 module.exports = router; 

@@ -3,7 +3,6 @@ const FriendRequest = require('../Models/friendRequestModel');
 const Notification = require('../Models/notificationModel');
 
 // send friend request ================================
-
 const sendFriendRequest = async (req, res) => {
     try {
         const {
@@ -54,7 +53,7 @@ const sendFriendRequest = async (req, res) => {
             receiverReceivedRequestsCount +
             receiverSentRequestsCount;
             
-        if (combinedFriendCount >= 5) {
+        if (combinedFriendCount >= 500) {
             return res.status(400).json({
                 status: 'failed',
                 message: 'Users have reached the maximum limit of friends',
@@ -91,7 +90,6 @@ const sendFriendRequest = async (req, res) => {
         });
 
         await notification.save();
-
 
         // Check if the sender has already received a friend request from the receiver
         const hasReceivedRequest = sender.friendRequests.some((requestId) =>
@@ -214,7 +212,6 @@ const acceptFriendRequest = async (req, res) => {
         });
     }
 };
-
 
 // reject friend request ================================
 const rejectFriendRequest = async (req, res) => {
